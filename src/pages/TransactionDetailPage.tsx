@@ -21,8 +21,10 @@ export const TransactionDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const [detail, setDetail] = useState<EDITransactionDetail | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isFulfilling, setIsFulfilling] = useState<boolean>(false);
+  const [fulfillMessage, setFulfillMessage] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchDetail = () => {
     if (!poNumber) return;
     setIsLoading(true);
     ediService
@@ -33,11 +35,38 @@ export const TransactionDetailPage: React.FC = () => {
       .finally(() => {
         setIsLoading(false);
       });
+  };
+
+  useEffect(() => {
+    fetchDetail();
   }, [poNumber]);
+
+  const handleFulfillOrder = async () => {
+    if (!poNumber) return;
+    setIsFulfilling(true);
+    setFulfillMessage(null);
+    try {
+      const result = await ediService.fulfillOrder(poNumber);
+      if (result.success) {
+        setFulfillMessage('Order successfully fulfilled! Outbound 856 ASN and 810 Invoice generated and sent.');
+        fetchDetail();
+      } else {
+        setFulfillMessage(result.error || 'Failed to fulfill order');
+      }
+    } catch (err: any) {
+      setFulfillMessage(err.message || 'Error executing fulfillment');
+    } finally {
+      setIsFulfilling(false);
+    }
+  };
 
   if (isLoading) {
     return (
-      <Page fullWidth>
+      <Page
+        fullWidth
+        backAction={{ content: 'EDI transactions', onAction: () => navigate('/') }}
+        title={`PO ${poNumber || ''}`}
+      >
         <div className="flex justify-center items-center py-20">
           <Spinner accessibilityLabel="Loading order details" size="large" />
         </div>
@@ -47,14 +76,12 @@ export const TransactionDetailPage: React.FC = () => {
 
   if (!detail) {
     return (
-      <Page fullWidth>
+      <Page
+        fullWidth
+        backAction={{ content: 'EDI transactions', onAction: () => navigate('/') }}
+        title="Order Not Found"
+      >
         <div className="mb-4">
-          <button
-            onClick={() => navigate('/')}
-            className="text-[13px] text-[#005bd3] hover:underline flex items-center gap-1 font-normal bg-transparent border-0 p-0 cursor-pointer mb-3"
-          >
-            ‹ EDI transactions
-          </button>
           <Banner tone="critical">
             Could not find EDI transaction with PO number: <strong>{poNumber}</strong>
           </Banner>
@@ -63,32 +90,44 @@ export const TransactionDetailPage: React.FC = () => {
     );
   }
 
+  const canFulfill =
+    detail.status.label.toLowerCase().includes('awaiting') ||
+    detail.status.label.toLowerCase().includes('pending');
+
   return (
-    <Page fullWidth>
+    <Page
+      fullWidth
+      backAction={{ content: 'EDI transactions', onAction: () => navigate('/') }}
+      title={`PO ${detail.poNumber}`}
+      titleMetadata={
+        <StatusBadge
+          label={detail.status.label}
+          tone={detail.status.tone}
+          showDot={true}
+        />
+      }
+      subtitle={detail.subtitle}
+      primaryAction={
+        canFulfill
+          ? {
+              content: 'Fulfill Order (Send 856 & 810)',
+              loading: isFulfilling,
+              onAction: handleFulfillOrder,
+            }
+          : undefined
+      }
+    >
       <div className="w-full min-w-0">
         <BlockStack gap="400">
-          {/* Custom Header replicating design mockup */}
-          <div className="mb-1">
-            <button
-              onClick={() => navigate('/')}
-              className="text-[13px] text-[#005bd3] hover:underline inline-flex items-center gap-1 font-normal bg-transparent border-0 p-0 cursor-pointer mb-2"
+          {/* Fulfillment Success / Alert Banner */}
+          {fulfillMessage && (
+            <Banner
+              tone={fulfillMessage.includes('successfully') ? 'success' : 'critical'}
+              onDismiss={() => setFulfillMessage(null)}
             >
-              ‹ EDI transactions
-            </button>
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight leading-tight">
-                PO {detail.poNumber}
-              </h1>
-              <StatusBadge
-                label={detail.status.label}
-                tone={detail.status.tone}
-                showDot={true}
-              />
-            </div>
-            <p className="text-xs sm:text-[13px] text-gray-500 mt-1">
-              {detail.subtitle}
-            </p>
-          </div>
+              <p>{fulfillMessage}</p>
+            </Banner>
+          )}
 
           {/* 2-Column Responsive Layout */}
           <Layout>

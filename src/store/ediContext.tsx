@@ -17,19 +17,18 @@ interface EdiContextType {
   setActiveTab: (tab: FilterTabId) => void;
   isLoading: boolean;
   refreshData: () => Promise<void>;
+  ingestSample850: () => Promise<void>;
   isLiveApi: boolean;
 }
 
 const EdiContext = createContext<EdiContextType | undefined>(undefined);
 
 export const EdiProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [transactions, setTransactions] = useState<EDITransactionListItem[]>(
-    hasBackendApi ? [] : mockTransactionList
-  );
+  const [transactions, setTransactions] = useState<EDITransactionListItem[]>(mockTransactionList);
   const [metrics, setMetrics] = useState<MetricCardStats>(mockMetricStats);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeTab, setActiveTab] = useState<FilterTabId>('all');
-  const [isLoading, setIsLoading] = useState<boolean>(hasBackendApi);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -38,7 +37,7 @@ export const EdiProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         ediService.getTransactions(),
         ediService.getMetrics(),
       ]);
-      if (Array.isArray(trans)) {
+      if (Array.isArray(trans) && trans.length > 0) {
         setTransactions(trans);
       }
       if (mets && typeof mets === 'object') {
@@ -56,6 +55,16 @@ export const EdiProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const refreshData = async () => {
     await ediService.refreshTransactions();
     await loadData();
+  };
+
+  const ingestSample850 = async () => {
+    setIsLoading(true);
+    try {
+      await ediService.ingestSample850();
+      await loadData();
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const filteredTransactions = useMemo(() => {
@@ -95,6 +104,7 @@ export const EdiProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setActiveTab,
         isLoading,
         refreshData,
+        ingestSample850,
         isLiveApi: hasBackendApi,
       }}
     >
