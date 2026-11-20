@@ -1,62 +1,32 @@
-# Stronger Ecommerce - EDI Transactions Dashboard (Shopify Polaris)
+# React + TypeScript + Vite
 
-A high-fidelity replica and implementation of the EDI Transactions dashboard and detail management views built strictly adhering to the **Shopify Polaris Design System**, with **React**, **TypeScript**, and **Tailwind CSS**.
+This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
 
----
+Currently, two official plugins are available:
 
-## Features
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-- **Strict Shopify Polaris UI**:
-  - `<IndexTable>` with responsive columns, custom status badges, and resource actions.
-  - `<DataTable>` for secondary document audits with ISA/GS/ST control numbers.
-  - `<Badge>` with dynamic status tones (`success`, `warning`, `critical`, `info`) and progress states.
-  - `<InlineGrid>`, `<BlockStack>`, and `<InlineStack>` layout primitives.
-  - `<Modal>` for viewing raw X12 EDI transaction documents.
-- **Fluid Responsiveness**:
-  - Desktop, tablet, and mobile optimized.
-  - Multi-column metric cards grid (`InlineGrid`) with intelligent mobile reflow.
-- **Robust API & Fallback Layer**:
-  - Configurable backend integration via `VITE_API_BASE_URL`.
-  - Automatic normalization supporting both `camelCase` and `snake_case` payloads.
-  - Single-source fallback mock data (`src/api/mockData.ts`) when running offline or during API downtime.
+## React Compiler
 
----
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-## Getting Started
+## Expanding the Oxlint configuration
 
-### Prerequisites
+If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
 
-- Node.js (v18+)
-- npm
-
-### Installation
-
-```bash
-npm install
+```json
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "typescript", "oxc"],
+  "options": {
+    "typeAware": true
+  },
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/only-export-components": ["warn", { "allowConstantExport": true }]
+  }
+}
 ```
 
-### Development
-
-```bash
-npm run dev
-```
-
-The application will be available at `http://localhost:5173/`.
-
-### Production Build
-
-```bash
-npm run build
-```
-
----
-
-## Configuration
-
-To connect a live backend API, set `VITE_API_BASE_URL` in `.env`:
-
-```env
-VITE_API_BASE_URL=http://localhost:8000
-```
-
-When `VITE_API_BASE_URL` is omitted, the application seamlessly runs on complete mock data from `src/api/mockData.ts`.
+See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.

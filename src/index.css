@@ -1,19 +1,16 @@
 @import "tailwindcss";
-@import "@shopify/polaris/build/esm/styles.css";
 
-/* Base adjustments to harmonize Polaris styles */
 html,
-body {
+body,
+#root {
+  width: 100%;
+  min-height: 100vh;
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Segoe UI",
-    Roboto, "Helvetica Neue", sans-serif;
-  background-color: #f1f2f4;
-  color: #202223;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-* {
-  box-sizing: border-box;
+s-page {
+  width: 100%;
+  max-width: 100% !important;
+  display: block;
 }

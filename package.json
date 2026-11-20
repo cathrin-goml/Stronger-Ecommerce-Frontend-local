@@ -1,5 +1,5 @@
 {
-  "name": "my-app",
+  "name": "edi-platform-frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -7,25 +7,30 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prepare": "husky"
   },
   "dependencies": {
-    "@shopify/polaris": "^13.9.5",
-    "@shopify/polaris-icons": "^9.3.1",
     "@tailwindcss/vite": "^4.3.5",
     "axios": "^1.21.1",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-router-dom": "^7.18.5",
-    "tailwindcss": "^4.3.5"
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "tailwindcss": "^4.3.5",
+    "zustand": "^5.1.0"
   },
   "devDependencies": {
+    "@shopify/polaris-types": "^2.0.0",
     "@types/node": "^24.19.2",
-    "@types/react": "^18.3.31",
-    "@types/react-dom": "^18.3.7",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.1",
     "oxlint": "^1.90.0",
     "typescript": "~7.0.2",
     "vite": "^8.3.6"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": "oxlint"
   }
 }

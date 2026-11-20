@@ -1,97 +1,98 @@
-export type BadgeTone = 'success' | 'critical' | 'warning' | 'info' | 'attention';
+export type DocumentCode = '850' | '997' | '856' | '810';
 
-export type LifecycleStatus = 'completed' | 'failed' | 'pending';
+export type DocumentState = 'success' | 'critical' | 'muted';
 
-export interface DocumentBadgeStatus {
-  label: string;
-  tone: BadgeTone;
-}
+export type TransactionStatus = 
+  | '856_810_sent' 
+  | 'awaiting_shipment' 
+  | 'unacknowledged' 
+  | 'import_failed';
 
-export interface DocumentsSummary {
-  doc850: 'received' | 'not_received';
-  doc997: 'accepted' | 'rejected' | 'pending';
-  doc856: 'acknowledged' | 'unacknowledged' | 'not_sent';
-  doc810: 'acknowledged' | 'unacknowledged' | 'not_sent';
-}
+export type TabKey = 
+  | 'all' 
+  | 'awaiting_shipment' 
+  | '856_810_sent' 
+  | 'needs_attention' 
+  | 'inventory_846';
 
-export interface EDITransactionListItem {
+export interface EDITransaction {
   id: string;
   poNumber: string;
-  status: DocumentBadgeStatus;
+  status: TransactionStatus;
+  statusLabel: string;
+  statusTone: 'info' | 'warning' | 'critical';
   poDate: string;
-  customer: string;
-  itemCount: number;
-  orderTotal: number;
+  customerName: string;
+  itemsCount: number;
+  totalAmount: number;
   shopifyOrder: string | null;
-  documentsSummary: DocumentsSummary;
+  documents: Record<DocumentCode, DocumentState>;
 }
 
-export interface EDIDocument {
+export interface MetricCardItem {
+  label: string;
+  value: string | number;
+  subtitle: string;
+  isCritical?: boolean;
+}
+
+export interface EDISummaryMetrics {
+  poReceived: MetricCardItem;
+  ackSent: MetricCardItem;
+  shipInvoicesSent: MetricCardItem;
+  inventoryLastRun: MetricCardItem;
+  needsAttention: MetricCardItem;
+}
+
+// Detail Page Types
+export interface EDIDocumentRow {
   id: string;
-  documentType: string;
+  document: string;
   direction: 'Inbound' | 'Outbound';
-  controlNumbers: string; // ISA13 / GS06 / ST02
-  timeUtc: string;
-  status: DocumentBadgeStatus;
+  controlNumbers: string;
+  timestampUTC: string;
+  statusLabel: string;
+  statusTone: 'success' | 'critical' | 'warning' | 'info' | 'auto';
+  hasViewRaw?: boolean;
   rawPayload?: string;
 }
 
-export interface LifecycleStep {
+export interface LifecycleEvent {
   id: string;
   title: string;
-  timeUtc?: string;
-  channel?: string;
-  isa?: string;
-  note?: string;
-  status: LifecycleStatus;
+  status: 'completed' | 'failed' | 'pending';
+  timestampUTC?: string;
+  endpointOrSource?: string;
+  details?: string;
 }
 
-export interface OrderSummaryData {
-  shopifyOrder: string;
-  vendorRef: string;
-  customerRef: string;
-  shipMethod: string;
-  requestedShip: string;
-  shipmentInvoiceNo: string;
-  tracking: string;
-  invoiceTotal: string;
-}
-
-export interface ShipToData {
-  name: string;
-  addressLines: string[];
-  isMasked?: boolean;
-}
-
-export interface LineItemData {
+export interface EDILineItem {
   id: string;
   quantity: number;
   title: string;
-  price: string;
+  price: number;
   sku: string;
-  vendorStyle: string;
+  vendorCode: string;
   upc: string;
-  retailPrice: string;
+  retailPrice: number;
 }
 
-export interface EDITransactionDetail {
-  poNumber: string;
-  status: DocumentBadgeStatus;
-  subtitle: string;
-  documentsFootnote?: string;
-  documents: EDIDocument[];
-  lifecycle: LifecycleStep[];
-  order: OrderSummaryData;
-  shipTo: ShipToData;
-  lineItems: LineItemData[];
+export interface EDITransactionDetail extends EDITransaction {
+  subTitle: string;
+  documentsList: EDIDocumentRow[];
+  documentsNote?: string;
+  lifecycle: LifecycleEvent[];
+  vendorRef: string;
+  customerRef: string;
+  shipMethod: string;
+  requestedShipDate: string;
+  shipmentInvoiceNo: string | null;
+  trackingNumber: string | null;
+  shippingAddress: {
+    name: string;
+    street: string;
+    cityStateZip: string;
+    phone: string;
+  };
+  lineItems: EDILineItem[];
 }
-
-export interface MetricCardStats {
-  po850Received: { count: number; subtext: string };
-  po997Sent: { count: number; subtext: string };
-  po856_810Sent: { ratio: string; subtext: string };
-  po846LastRun: { time: string; subtext: string };
-  needsAttention: { count: number; subtext: string };
-}
-
-export type FilterTabId = 'all' | 'awaiting' | 'sent' | 'attention' | 'inventory';
